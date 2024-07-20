@@ -1,0 +1,63 @@
+
+parameters:
+- name: DBServer
+  displayName: DatabaseServer
+  type: string
+  default: 
+- name: Database
+  displayName: Database
+  type: string
+  default: 
+- name: SynapseWS
+  displayName: SynapseWorkSpace
+  type: string
+  default: "syssoft-dev"
+
+#schedules:
+#- cron: '0 12 * * *'
+#  displayName: Daily noon testing
+#  branches:
+#    include:
+#    - main
+#  always: true
+
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'Test-Automation-SC'
+    scriptType: 'pscore'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+     $date = (Get-Date).AddMinutes(-30)
+      $triggers = az synapse trigger list --workspace-name synapse-syssoft-dev| convertFrom-JSON	
+            if (($triggers.properties.recurrence.startTime -ne "2024-04-16T07:00:00") -or ($triggers.properties.recurrence.timeZone -ne "Eastern Standard Time")) {throw "Trigger is not set correctly"} else  {Write-Host Trigger is set correctly}
+    powerShellErrorActionPreference: 'continue'
+  displayName: TestCase 1
+
+
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'Test-Automation-SC'
+    scriptType: 'pscore'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+     $id = (az synapse pipeline-run query-by-workspace --workspace-name synapse-syssoft-dev --last-updated-before (Get-Date -Format "o") --last-updated-after (Get-Date $date -Format "o") | ConvertFrom-JSON)
+      if($id.value.invokedBy.name -ne "Trigger1")        {Write-Host "Pipeline has not started according to trigger"}      else        {Write-Host "Pipeline invoked by correct trigger"}
+    powerShellErrorActionPreference: 'continue'
+  displayName: TestCase 2
+
+
+- task: AzureCLI@2
+  inputs:
+    azureSubscription: 'Test-Automation-SC'
+    scriptType: 'pscore'
+    scriptLocation: 'inlineScript'
+    inlineScript: |
+      #$id = (az synapse pipeline-run query-by-workspace --workspace-name synapse-syssoft-dev --last-updated-before (Get-Date -Format "o") --last-updated-after (Get-Date $date -Format "o") | ConvertFrom-JSON)
+      	  #if(($id.value.pipelineName -ne "PipelineA")   -and ($id.value.stauts -ne "Succeeded"))	 {throw "PipelineA is not completed successfully"} else  {Write-Host Pipeline completed successfully}
+    powerShellErrorActionPreference: 'continue'
+  displayName: TestCase 3

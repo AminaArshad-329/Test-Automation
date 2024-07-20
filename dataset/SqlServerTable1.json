@@ -1,0 +1,43 @@
+{
+	"name": "SqlServerTable1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "SqlServer1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "SqlServerTable",
+		"schema": [
+			{
+				"name": "ID",
+				"type": "decimal",
+				"precision": 38,
+				"scale": 0
+			},
+			{
+				"name": "NationalID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "FirstName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "LastName",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Gender",
+				"type": "nvarchar"
+			},
+			{
+				"name": "BirthDate",
+				"type": "date"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Person"
+		}
+	}
+}

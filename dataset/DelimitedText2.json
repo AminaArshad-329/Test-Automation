@@ -1,0 +1,25 @@
+{
+	"name": "DelimitedText2",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "copied_file.csv",
+				"folderPath": "data",
+				"container": "synapse"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.Synapse/workspaces/datasets"
+}

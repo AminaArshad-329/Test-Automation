@@ -1,0 +1,79 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+
+trigger: none
+
+    
+pool:
+  vmImage: ubuntu-latest
+
+# Copy ARM Template Files to: $(Build.ArtifactStagingDirectory)
+
+steps:
+# Installs Node and the npm packages saved in your package.json file in the build
+- task: NodeTool@0
+  displayName: 'Install Node.js'
+  inputs:
+    versionSpec: '14.x'
+
+- task: Npm@1
+  displayName: 'Install npm package'
+  inputs:
+    command: 'install'
+    workingDir: '$(Build.Repository.LocalPath)'
+    
+# Automated tests
+- task: AzureCLI@2
+  displayName: 'Run Automated Tests using Python'
+  timeoutInMinutes: 120
+  inputs:
+    azureSubscription: 'Test-Automation-SC'
+    scriptType: bash
+    scriptLocation: inlineScript
+    inlineScript: |
+        #!/bin/bash
+        pip install -r $(Build.Repository.LocalPath)/tests/requirements.txt
+        pip install azure-mgmt-synapse
+        pip install azure-storage-blob --upgrade
+        pip install azure-mgmt-monitor
+        pip install --force-reinstall azure-synapse-artifacts
+        pip install azure-identity azure-synapse-artifacts
+        # pip install --upgrade azure-synapse-artifacts
+        pip install pytest pytest-azurepipelines
+        pip install azure-synapse-artifacts
+        pip install pyodbc
+        pip install psycopg2
+        pip install pytest pytest-cov       
+        pytest --cov=automation --cov-report=xml:test_results/coverage.xml --junitxml=test_results/test_results.xml $(Build.Repository.LocalPath)/tests/*.py
+    workingDirectory: '$(Build.Repository.LocalPath)/tests/'
+  continueOnError: true
+
+
+- task: PublishTestResults@2
+  displayName: 'Publish Test results'
+  condition: succeededOrFailed()
+  enabled: true
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '$(Build.Repository.LocalPath)/tests/test_results/test_results.xml'
+    testRunTitle: 'All Test Results'
+
+- task: PublishCodeCoverageResults@2
+  inputs:   
+    summaryFileLocation: '$(Build.Repository.LocalPath)/tests/test_results/coverage.xml'  
+    
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: 'synapse-syssoft-dev'
+    Contents: '*.json'
+    TargetFolder: '$(Build.ArtifactsStagingDirectory)/ARM'
+
+
+- task: PublishPipelineArtifact@1
+  inputs:
+    targetPath: '$(Build.ArtifactsStagingDirectory)'
+    artifact: 'synapse-syssoft-dev_drop'
+    publishLocation: 'pipeline'

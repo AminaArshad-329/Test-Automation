@@ -1,0 +1,24 @@
+{
+	"name": "TriggerB",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Stopped",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "PipelineB",
+					"type": "PipelineReference"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Minute",
+				"interval": 15,
+				"startTime": "2024-04-17T20:35:00",
+				"timeZone": "Eastern Standard Time"
+			}
+		}
+	}
+}

@@ -1,0 +1,559 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"workspaceName": {
+			"type": "string",
+			"metadata": "Workspace name",
+			"defaultValue": "synapse-syssoft-dev"
+		},
+		"AzureBlobStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
+		},
+		"AzureSqlDatabase1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureSqlDatabase1'"
+		},
+		"synapse-syssoft-dev-WorkspaceDefaultSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'synapse-syssoft-dev-WorkspaceDefaultSqlServer'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:synapse-syssoft-dev.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"syssoft-dev-WorkspaceDefaultSqlServer_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'syssoft-dev-WorkspaceDefaultSqlServer'",
+			"defaultValue": "Integrated Security=False;Encrypt=True;Connection Timeout=30;Data Source=tcp:syssoft-dev.sql.azuresynapse.net,1433;Initial Catalog=@{linkedService().DBName}"
+		},
+		"synapse-syssoft-dev-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://syssoftcastorage.dfs.core.windows.net"
+		},
+		"syssoft-dev-WorkspaceDefaultStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://syssoftcastorage.dfs.core.windows.net"
+		}
+	},
+	"variables": {
+		"workspaceId": "[concat('Microsoft.Synapse/workspaces/', parameters('workspaceName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('workspaceName'), '/PipelineA')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "AzureSqlTable1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DelimitedText2",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-04-17T18:26:55Z"
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/AzureSqlTable1')]",
+				"[concat(variables('workspaceId'), '/datasets/DelimitedText2')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/PipelineB')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "CopyData for PipelineB",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "AzureSqlTable1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DelimitedText2",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/AzureSqlTable1')]",
+				"[concat(variables('workspaceId'), '/datasets/DelimitedText2')]"
+			]
+		},
+		{
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<AUTO GENERATED BY CONFLICT EXTENSION<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Main
+====================================AUTO GENERATED BY CONFLICT EXTENSION====================================
+			"name": "[concat(parameters('workspaceName'), '/PipelineC')]",
+			"type": "Microsoft.Synapse/workspaces/pipelines",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "AzureSqlTable1",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DelimitedText2",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/datasets/AzureSqlTable1')]",
+				"[concat(variables('workspaceId'), '/datasets/DelimitedText2')]"
+			]
+		},
+		{
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>AUTO GENERATED BY CONFLICT EXTENSION>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> workspace_publish
+			"name": "[concat(parameters('workspaceName'), '/AzureSqlTable1')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Person"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/AzureSqlDatabase1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DelimitedText1')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "file.csv",
+						"folderPath": "data",
+						"container": "synapse"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/DelimitedText2')]",
+			"type": "Microsoft.Synapse/workspaces/datasets",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "copied_file.csv",
+						"folderPath": "data",
+						"container": "synapse"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AzureBlobStorage1')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AzureSqlDatabase1')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureSqlDatabase1_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/synapse-syssoft-dev-WorkspaceDefaultSqlServer')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('synapse-syssoft-dev-WorkspaceDefaultSqlServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/synapse-syssoft-dev-WorkspaceDefaultStorage')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('synapse-syssoft-dev-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/syssoft-dev-WorkspaceDefaultSqlServer')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"parameters": {
+					"DBName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDW",
+				"typeProperties": {
+					"connectionString": "[parameters('syssoft-dev-WorkspaceDefaultSqlServer_connectionString')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/syssoft-dev-WorkspaceDefaultStorage')]",
+			"type": "Microsoft.Synapse/workspaces/linkedServices",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('syssoft-dev-WorkspaceDefaultStorage_properties_typeProperties_url')]"
+				},
+				"connectVia": {
+					"referenceName": "AutoResolveIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/integrationRuntimes/AutoResolveIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Trigger1')]",
+			"type": "Microsoft.Synapse/workspaces/triggers",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<AUTO GENERATED BY CONFLICT EXTENSION<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Main
+				"runtimeState": "Started",
+====================================AUTO GENERATED BY CONFLICT EXTENSION====================================
+				"runtimeState": "Stopped",
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>AUTO GENERATED BY CONFLICT EXTENSION>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> workspace_publish
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "PipelineA",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2024-04-16T07:00:00",
+						"timeZone": "Eastern Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/PipelineA')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/TriggerB')]",
+			"type": "Microsoft.Synapse/workspaces/triggers",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"annotations": [],
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<AUTO GENERATED BY CONFLICT EXTENSION<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< Main
+				"runtimeState": "Started",
+====================================AUTO GENERATED BY CONFLICT EXTENSION====================================
+				"runtimeState": "Stopped",
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>AUTO GENERATED BY CONFLICT EXTENSION>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> workspace_publish
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "PipelineB",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Minute",
+						"interval": 15,
+						"startTime": "2024-04-17T20:35:00",
+						"timeZone": "Eastern Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('workspaceId'), '/pipelines/PipelineB')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/AutoResolveIntegrationRuntime')]",
+			"type": "Microsoft.Synapse/workspaces/integrationRuntimes",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "Managed",
+				"typeProperties": {
+					"computeProperties": {
+						"location": "AutoResolve",
+						"dataFlowProperties": {
+							"computeType": "General",
+							"coreCount": 8,
+							"timeToLive": 0
+						}
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/WorkspaceSystemIdentity')]",
+			"type": "Microsoft.Synapse/workspaces/credentials",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"type": "ManagedIdentity",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		}
+	]
+}
